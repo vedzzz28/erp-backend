@@ -1,16 +1,21 @@
 const express = require("express");
 const app = express();
+app.use(express.json());
+// app.use(express.urlencoded());
 
 const connectDB = require("./config/db");
 connectDB();
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb" }));
 
-app.get("/api", (req, res) => {
-  res.send("hello world");
+const apiRoutes = require("./routes/routes");
+app.use("/", apiRoutes);
+
+const port = require("./config/dev").NEW_PORT;
+
+app.get("/", (req, res) => {
+  res.send("Running server");
 });
 
-app.listen(5000, () => {
+app.listen(port, () => {
   console.log("server running on port 5000");
 });

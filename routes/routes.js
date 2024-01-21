@@ -22,6 +22,8 @@ router.get("/dwdCurrCredential", dwdCurrCredential);
 router.post("/createStuCredentials", createStuCredentials);
 router.post("/createFacCredentials", createFacCredentials);
 
+module.exports = router;
+
 // app.post("/upload-data-faculty", upload.array("files"), async (req, res) => {
 //   // Extract form data from the request
 //   const {

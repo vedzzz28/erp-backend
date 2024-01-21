@@ -1,6 +1,7 @@
-const User = require("./models/User");
+// const User = require("./models/User");
+const jwt = require("jsonwebtoken");
 
-module.exports.createUser = asyncHandler(async (req, res) => {
+module.exports.createUser = async (req, res) => {
   try {
     const { email, password, role, username } = req.body;
     // Check if user with the same email already exists
@@ -22,10 +23,18 @@ module.exports.createUser = asyncHandler(async (req, res) => {
     console.error("Error registering user:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-});
+};
 
+function generateToken(user) {
+  const payload = {
+    email: user.email,
+    role: user.role,
+    name: user.username,
+  };
+  return jwt.sign(payload, "your-secret-key", { expiresIn: "1h" });
+}
 
-module.exports.loginUser = asyncHandler(async (req, res) => {
+module.exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -52,23 +61,14 @@ module.exports.loginUser = asyncHandler(async (req, res) => {
     console.error("Error during login:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-});
-module.exports.logoutUser = asyncHandler(async (req, res, next) => {});
-module.exports.getCredentials = asyncHandler(async (req, res, next) => {});
-module.exports.dwdCredentials = asyncHandler(async (req, res, next) => {});
-module.exports.dwdCurrCredential = asyncHandler(async (req, res, next) => {});
-module.exports.createStuCredentials = asyncHandler(
-  async (req, res, next) => {}
-);
-module.exports.createFacCredentials = asyncHandler(
-  async (req, res, next) => {}
-);
+};
 
-
-
-
-
-
+module.exports.logoutUser = async (req, res, next) => {};
+module.exports.getCredentials = async (req, res, next) => {};
+module.exports.dwdCredentials = async (req, res, next) => {};
+module.exports.dwdCurrCredential = async (req, res, next) => {};
+module.exports.createStuCredentials = async (req, res, next) => {};
+module.exports.createFacCredentials = async (req, res, next) => {};
 
 // app.post("/register", async (req, res) => {
 //   try {
