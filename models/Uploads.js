@@ -9,15 +9,74 @@ const uploadSchema = new mongoose.Schema({
     type: String,
     enum: ["faculty", "student"],
   },
-  title: String,
-  description: String,
-  files: [String],
-  timestamp: {
+  Achievement_Type: {
+    type: String,
+    enum: [
+      "Award",
+      "Patent Publication",
+      "Confrence Paper",
+      "Research Paper",
+      "Certification",
+    ],
+  },
+  Expiry_Date: {
     type: Date,
-    default: Date.now,
+  },
+  Achievement_Title: {
+    type: String,
+  },
+  Achievement_Details: {
+    type: String,
+  },
+  files: {
+    type: String,
+  },
+  Student_Name: {
+    type: String,
+    required: () => {
+      return this.category == "student";
+    },
+  },
+  Student_Registration_No: {
+    type: Number,
+    required: () => {
+      return this.category == "student";
+    },
+  },
+  Student_Branch: {
+    type: String,
+    enum: ["CCE", "IOT"],
+    required: () => {
+      return this.category == "student";
+    },
+  },
+  Student_Batch: {
+    type: Number,
+    required: () => {
+      return this.category == "student";
+    },
   },
 });
 
 const Upload = mongoose.model("Upload", uploadSchema);
 
 module.exports = Upload;
+
+// faculty upload
+// Achievement Type -> Award Patent Publication Confrence Paper Research Paper Certification
+// Expiry Date -> date
+// Ach title -> string
+// Ach details -> string
+// files
+
+// student upload
+// Student Name -> string
+// Student Registration No -> number
+// Student Branch -> CCE IOT
+// Student Batch -> number
+
+// Achievement Type -> Award Patent Publication Confrence Paper Research Paper Certification
+// Expiry Date -> date
+// Ach title -> string
+// Ach details -> string
+// files

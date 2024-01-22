@@ -1,4 +1,5 @@
-// const User = require("./models/User");
+const User = require("../models/User");
+const Uploads = require("./models/Uploads");
 const jwt = require("jsonwebtoken");
 
 module.exports.createUser = async (req, res) => {
@@ -47,7 +48,8 @@ module.exports.loginUser = async (req, res) => {
     }
 
     // Compare the provided password with the hashed password in the database
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = user.matchPassword(password);
 
     // Check if the password is valid
     if (isPasswordValid) {
@@ -64,7 +66,15 @@ module.exports.loginUser = async (req, res) => {
 };
 
 module.exports.logoutUser = async (req, res, next) => {};
-module.exports.getCredentials = async (req, res, next) => {};
+module.exports.getCredentials = async (req, res, next) => {
+  try {
+    const { user_email } = req.body;
+    const credentials = await Uploads.find({ email: user_email }).exec();
+    res.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
 module.exports.dwdCredentials = async (req, res, next) => {};
 module.exports.dwdCurrCredential = async (req, res, next) => {};
 module.exports.createStuCredentials = async (req, res, next) => {};
