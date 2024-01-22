@@ -13,12 +13,12 @@ const {
 } = require("../controller/controller");
 
 router.post("/createUser", createUser);
-router.post("/login", loginUser);
-router.get("/logout", logoutUser);
+// router.post("/login", loginUser);
+// router.get("/logout", logoutUser);
 
 router.get("/getCredentials", getCredentials);
-router.get("/dwdCredentials", dwdCredentials);
-router.get("/dwdCurrCredential", dwdCurrCredential);
+// router.get("/dwdCredentials", dwdCredentials);
+// router.get("/dwdCurrCredential", dwdCurrCredential);
 router.post("/createStuCredentials", createStuCredentials);
 router.post("/createFacCredentials", createFacCredentials);
 
@@ -70,7 +70,4 @@ module.exports = router;
 //       res.status(500).json({ message: "Internal server error" });
 //     });
 // });
-// const port = 8000;
-// app.listen(port, () => {
-//   console.log(`Server is running on http://localhost:${port}`);
-// });
+

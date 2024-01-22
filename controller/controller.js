@@ -1,27 +1,101 @@
 const User = require("../models/User");
-const Uploads = require("./models/Uploads");
+const Upload = require("../models/Uploads");
 const jwt = require("jsonwebtoken");
 
 module.exports.createUser = async (req, res) => {
   try {
     const { email, password, role, username } = req.body;
-    // Check if user with the same email already exists
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "Email already in use" });
     }
 
-    // Create a new user
-    const newUser = await User.create({
-      username,
-      email,
-      password,
-      role,
+    const user = await User.create({
+      username: username,
+      email: email,
+      password: password,
+      role: role,
     });
 
-    res.json({ message: "User registered successfully", user: newUser });
+    console.log("user created", user);
+    res.json({ message: "User registered successfully", user: user });
   } catch (error) {
     console.error("Error registering user:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+module.exports.getCredentials = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    console.log(email);
+    const credentials = await Upload.find({ user_email: email }).exec();
+    res.json({
+      message: "Credentials found",
+      credentials: credentials,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+module.exports.createStuCredentials = async (req, res, next) => {
+  try {
+    const email = req.body.email;
+    const category = req.body.category;
+    const Achievement_Type = req.body.Achievement_Type;
+    const Expiry_Date = req.body.Expiry_Date;
+    const Achievement_Title = req.body.Achievement_Title;
+    const Achievement_Details = req.body.Achievement_Details;
+    const files = req.body.files;
+    const Student_Name = req.body.Student_Name;
+    const Student_Registration_No = req.body.Student_Registration_No;
+    const Student_Branch = req.body.Student_Branch;
+    const Student_Batch = req.body.Student_Batch;
+
+    const credential = await Upload.create({
+      user_email: email,
+      category: category,
+      Achievement_Type: Achievement_Type,
+      Expiry_Date: Expiry_Date,
+      Achievement_Title: Achievement_Title,
+      Achievement_Details: Achievement_Details,
+      files: files,
+      Student_Name: Student_Name,
+      Student_Registration_No: Student_Registration_No,
+      Student_Branch: Student_Branch,
+      Student_Batch: Student_Batch,
+    });
+    console.log("student credential created", credential);
+    res.json({ credential: credential });
+  } catch (error) {
+    console.error("Error uploding student credential:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+module.exports.createFacCredentials = async (req, res, next) => {
+  try {
+    const email = req.body.email;
+    const category = req.body.category;
+    const Achievement_Type = req.body.Achievement_Type;
+    const Expiry_Date = req.body.Expiry_Date;
+    const Achievement_Title = req.body.Achievement_Title;
+    const Achievement_Details = req.body.Achievement_Details;
+    const files = req.body.files;
+
+    const credential = await Upload.create({
+      user_email: email,
+      category: category,
+      Achievement_Type: Achievement_Type,
+      Expiry_Date: Expiry_Date,
+      Achievement_Title: Achievement_Title,
+      Achievement_Details: Achievement_Details,
+      files: files,
+    });
+    console.log("Faculty Credential created", credential);
+    res.json({ credential: credential });
+  } catch (error) {
+    console.error("Error uploding faculty credential:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -66,19 +140,9 @@ module.exports.loginUser = async (req, res) => {
 };
 
 module.exports.logoutUser = async (req, res, next) => {};
-module.exports.getCredentials = async (req, res, next) => {
-  try {
-    const { user_email } = req.body;
-    const credentials = await Uploads.find({ email: user_email }).exec();
-    res.json();
-  } catch (error) {
-    console.log(error);
-  }
-};
+
 module.exports.dwdCredentials = async (req, res, next) => {};
 module.exports.dwdCurrCredential = async (req, res, next) => {};
-module.exports.createStuCredentials = async (req, res, next) => {};
-module.exports.createFacCredentials = async (req, res, next) => {};
 
 // app.post("/register", async (req, res) => {
 //   try {

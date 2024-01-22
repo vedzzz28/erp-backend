@@ -20,7 +20,7 @@ const uploadSchema = new mongoose.Schema({
     ],
   },
   Expiry_Date: {
-    type: Date,
+    type: String,
   },
   Achievement_Title: {
     type: String,
@@ -33,27 +33,27 @@ const uploadSchema = new mongoose.Schema({
   },
   Student_Name: {
     type: String,
-    required: () => {
-      return this.category == "student";
+    required: function () {
+      return this.category === "student";
     },
   },
   Student_Registration_No: {
     type: Number,
-    required: () => {
-      return this.category == "student";
+    required: function () {
+      return this.category === "student";
     },
   },
   Student_Branch: {
     type: String,
     enum: ["CCE", "IOT"],
-    required: () => {
-      return this.category == "student";
+    required: function () {
+      return this.category === "student";
     },
   },
   Student_Batch: {
     type: Number,
-    required: () => {
-      return this.category == "student";
+    required: function () {
+      return this.category === "student";
     },
   },
 });
