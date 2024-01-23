@@ -1,10 +1,15 @@
 const User = require("../models/User");
 const Upload = require("../models/Uploads");
+if (process.env.NODE_ENV != "production") {
+  require("dotenv").config();
+}
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 module.exports.createUser = async (req, res) => {
   try {
     const { email, password, role, username } = req.body;
+    const hashedPassword = bcrypt.hashSync(password, 8);
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -12,14 +17,14 @@ module.exports.createUser = async (req, res) => {
     }
 
     const user = await User.create({
-      username: username,
-      email: email,
-      password: password,
-      role: role,
+      username,
+      email,
+      password: hashedPassword,
+      role,
     });
 
     console.log("user created", user);
-    res.json({ message: "User registered successfully", user: user });
+    res.json({ message: "User registered successfully", user });
   } catch (error) {
     console.error("Error registering user:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -28,11 +33,10 @@ module.exports.createUser = async (req, res) => {
 module.exports.getCredentials = async (req, res, next) => {
   try {
     const { email } = req.body;
-    console.log(email);
     const credentials = await Upload.find({ user_email: email }).exec();
     res.json({
       message: "Credentials found",
-      credentials: credentials,
+      credentials,
     });
   } catch (error) {
     console.log(error);
@@ -41,33 +45,35 @@ module.exports.getCredentials = async (req, res, next) => {
 };
 module.exports.createStuCredentials = async (req, res, next) => {
   try {
-    const email = req.body.email;
-    const category = req.body.category;
-    const Achievement_Type = req.body.Achievement_Type;
-    const Expiry_Date = req.body.Expiry_Date;
-    const Achievement_Title = req.body.Achievement_Title;
-    const Achievement_Details = req.body.Achievement_Details;
-    const files = req.body.files;
-    const Student_Name = req.body.Student_Name;
-    const Student_Registration_No = req.body.Student_Registration_No;
-    const Student_Branch = req.body.Student_Branch;
-    const Student_Batch = req.body.Student_Batch;
+    const {
+      email,
+      category,
+      Achievement_Type,
+      Expiry_Date,
+      Achievement_Title,
+      Achievement_Details,
+      files,
+      Student_Name,
+      Student_Registration_No,
+      Student_Branch,
+      Student_Batch,
+    } = req.body;
 
     const credential = await Upload.create({
       user_email: email,
-      category: category,
-      Achievement_Type: Achievement_Type,
-      Expiry_Date: Expiry_Date,
-      Achievement_Title: Achievement_Title,
-      Achievement_Details: Achievement_Details,
-      files: files,
-      Student_Name: Student_Name,
-      Student_Registration_No: Student_Registration_No,
-      Student_Branch: Student_Branch,
-      Student_Batch: Student_Batch,
+      category,
+      Achievement_Type,
+      Expiry_Date,
+      Achievement_Title,
+      Achievement_Details,
+      files,
+      Student_Name,
+      Student_Registration_No,
+      Student_Branch,
+      Student_Batch,
     });
     console.log("student credential created", credential);
-    res.json({ credential: credential });
+    res.json({ credential });
   } catch (error) {
     console.error("Error uploding student credential:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -75,127 +81,84 @@ module.exports.createStuCredentials = async (req, res, next) => {
 };
 module.exports.createFacCredentials = async (req, res, next) => {
   try {
-    const email = req.body.email;
-    const category = req.body.category;
-    const Achievement_Type = req.body.Achievement_Type;
-    const Expiry_Date = req.body.Expiry_Date;
-    const Achievement_Title = req.body.Achievement_Title;
-    const Achievement_Details = req.body.Achievement_Details;
-    const files = req.body.files;
+    const {
+      email,
+      category,
+      Achievement_Type,
+      Expiry_Date,
+      Achievement_Title,
+      Achievement_Details,
+      files,
+    } = req.body;
 
     const credential = await Upload.create({
       user_email: email,
-      category: category,
-      Achievement_Type: Achievement_Type,
-      Expiry_Date: Expiry_Date,
-      Achievement_Title: Achievement_Title,
-      Achievement_Details: Achievement_Details,
-      files: files,
+      category,
+      Achievement_Type,
+      Expiry_Date,
+      Achievement_Title,
+      Achievement_Details,
+      files,
     });
     console.log("Faculty Credential created", credential);
-    res.json({ credential: credential });
+    res.json({ credential });
   } catch (error) {
     console.error("Error uploding faculty credential:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-function generateToken(user) {
-  const payload = {
-    email: user.email,
-    role: user.role,
-    name: user.username,
-  };
-  return jwt.sign(payload, "your-secret-key", { expiresIn: "1h" });
-}
-
 module.exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find the user by email
     const user = await User.findOne({ email });
 
-    // Check if the user exists
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid Email" });
     }
 
-    // Compare the provided password with the hashed password in the database
-    // const isPasswordValid = await bcrypt.compare(password, user.password);
-    const isPasswordValid = user.matchPassword(password);
+    // const isPasswordValid = user.matchPassword(password);
+    const passwordMatch = bcrypt.compareSync(password, user.password);
 
-    // Check if the password is valid
-    if (isPasswordValid) {
-      const token = generateToken(user);
-      // Send token to the frontend
-      res.json({ message: "Login successful", token });
-    } else {
-      res.status(401).json({ error: "Invalid credentials" });
+    if (!passwordMatch) {
+      res.status(401).json({ error: "Invalid Password" });
     }
+
+    const exp =
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000;
+
+    const token = jwt.sign({ sub: user._id, exp }, process.env.JWT_SECRET);
+
+    const options = {
+      expires: new Date(exp),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    };
+
+    res.status(200).cookie("token", token, options).json({
+      message: "Login successful",
+      success: true,
+      token,
+    });
   } catch (error) {
     console.error("Error during login:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-module.exports.logoutUser = async (req, res, next) => {};
+module.exports.checkAuth = (req, res) => {
+  console.log(req.user);
+  res.status(200).json({ message: "success" });
+};
+
+module.exports.logoutUser = async (req, res, next) => {
+  res.clearCookie("token");
+  res.status(200).json({ message: "Logged out Successfully" });
+};
 
 module.exports.dwdCredentials = async (req, res, next) => {};
 module.exports.dwdCurrCredential = async (req, res, next) => {};
-
-// app.post("/register", async (req, res) => {
-//   try {
-//     const { email, password, role, username } = req.body;
-//     // Check if user with the same email already exists
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({ error: "Email already in use" });
-//     }
-
-//     // Create a new user
-//     const newUser = await User.create({
-//       username,
-//       email,
-//       password,
-//       role,
-//     });
-
-//     res.json({ message: "User registered successfully", user: newUser });
-//   } catch (error) {
-//     console.error("Error registering user:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// });
-
-// app.post("/login", async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     // Find the user by email
-//     const user = await User.findOne({ email });
-
-//     // Check if the user exists
-//     if (!user) {
-//       return res.status(401).json({ error: "Invalid credentials" });
-//     }
-
-//     // Compare the provided password with the hashed password in the database
-//     const isPasswordValid = await bcrypt.compare(password, user.password);
-
-//     // Check if the password is valid
-//     if (isPasswordValid) {
-//       const token = generateToken(user);
-//       // Send token to the frontend
-//       res.json({ message: "Login successful", token });
-//     } else {
-//       res.status(401).json({ error: "Invalid credentials" });
-//     }
-//   } catch (error) {
-//     console.error("Error during login:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// });
 
 // const storage = multer.memoryStorage(); // Store files in memory
 
@@ -248,8 +211,4 @@ module.exports.dwdCurrCredential = async (req, res, next) => {};
 //       console.error("Error storing files in MongoDB:", error);
 //       res.status(500).json({ message: "Internal server error" });
 //     });
-// });
-// const port = 8000;
-// app.listen(port, () => {
-//   console.log(`Server is running on http://localhost:${port}`);
 // });

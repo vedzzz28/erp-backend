@@ -1,16 +1,20 @@
 const express = require("express");
-const app = express();
+const cookieParser = require("cookie-parser");
+const connectDB = require("./config/db");
+const apiRoutes = require("./routes/routes");
 if (process.env.NODE_ENV != "production") {
   require("dotenv").config();
 }
+
+const app = express();
 app.use(express.json());
+app.use(cookieParser());
+
 
 //connnect to DB
-const connectDB = require("./config/db");
 connectDB();
 
 //Routes
-const apiRoutes = require("./routes/routes");
 app.use("/", apiRoutes);
 
 app.get("/", (req, res) => {
