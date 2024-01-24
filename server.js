@@ -8,15 +8,14 @@ if (process.env.NODE_ENV != "production") {
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
 
 //connnect to DB
 connectDB();
 
 //Routes
 app.use("/", apiRoutes);
-
 app.get("/", (req, res) => {
   res.send("Running server");
 });

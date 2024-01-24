@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
+const User = require("./User");
 
 const uploadSchema = new mongoose.Schema({
-  user_email: {
+  email: {
     type: String,
     required: true,
   },
@@ -20,7 +21,7 @@ const uploadSchema = new mongoose.Schema({
     ],
   },
   Expiry_Date: {
-    type: String,
+    type: String, //change when frontend connected
   },
   Achievement_Title: {
     type: String,
@@ -28,9 +29,12 @@ const uploadSchema = new mongoose.Schema({
   Achievement_Details: {
     type: String,
   },
-  files: {
-    type: String,
-  },
+  files: [
+    {
+      type: String,
+    },
+  ],
+  // userId: [User.Types.ObjectId],
   Student_Name: {
     type: String,
     required: function () {

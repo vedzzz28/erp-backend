@@ -5,7 +5,7 @@ const requireAuth = async (req, res, next) => {
   try {
     const token = req.cookies.token;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decoded);
+    //console.log(decoded);
     if (Date.now() > decoded.exp) {
       console.log(Date.now(), decoded.exp);
       return res.status(401).json({ message: "Token Expired, login again" });
@@ -16,7 +16,7 @@ const requireAuth = async (req, res, next) => {
     next();
   } catch (e) {
     console.log(e);
-    res.status(401).json({ message: "Error while Authorization" });
+    res.status(401).json({ message: "Error while Authorization, Login again" });
   }
 };
 

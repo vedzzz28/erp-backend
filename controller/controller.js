@@ -32,8 +32,8 @@ module.exports.createUser = async (req, res) => {
 };
 module.exports.getCredentials = async (req, res, next) => {
   try {
-    const { email } = req.body;
-    const credentials = await Upload.find({ user_email: email }).exec();
+    const { email } = req.user;
+    const credentials = await Upload.find({ email }).exec();
     res.json({
       message: "Credentials found",
       credentials,
@@ -44,67 +44,87 @@ module.exports.getCredentials = async (req, res, next) => {
   }
 };
 module.exports.createStuCredentials = async (req, res, next) => {
+  // console.log(req.body);
+  // console.log(req.files);
   try {
     const {
-      email,
-      category,
+      //email, //where do i even get this from
+      // category,
       Achievement_Type,
       Expiry_Date,
       Achievement_Title,
       Achievement_Details,
-      files,
       Student_Name,
       Student_Registration_No,
       Student_Branch,
       Student_Batch,
     } = req.body;
+    email = req.user.email;
+    const uploadedFiles = [];
+    req.files.forEach((f) => {
+      console.log(f.path);
+      uploadedFiles.push(f.path);
+    });
 
     const credential = await Upload.create({
-      user_email: email,
-      category,
+      email,
+      category: "student",
       Achievement_Type,
       Expiry_Date,
       Achievement_Title,
       Achievement_Details,
-      files,
+      files: uploadedFiles, //change upload model to file= array of strings//done
       Student_Name,
       Student_Registration_No,
       Student_Branch,
       Student_Batch,
     });
-    console.log("student credential created", credential);
-    res.json({ credential });
+    // console.log("student credential created", credential);
+    res.json({ message: "student credential created", credential });
   } catch (error) {
-    console.error("Error uploding student credential:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    // console.error("Error uploding student credential:", error);
+    res.status(500).json({
+      error: "Internal Server Error",
+      "Error uploding student credential": error,
+    });
   }
+  // res.redirect("/");
 };
 module.exports.createFacCredentials = async (req, res, next) => {
   try {
     const {
-      email,
-      category,
+      //email,
+      // category,
       Achievement_Type,
       Expiry_Date,
       Achievement_Title,
       Achievement_Details,
-      files,
     } = req.body;
 
+    email = req.user.email;
+    const uploadedFiles = [];
+    req.files.forEach((f) => {
+      console.log(f.path);
+      uploadedFiles.push(f.path);
+    });
+
     const credential = await Upload.create({
-      user_email: email,
-      category,
+      email,
+      category: "faculty",
       Achievement_Type,
       Expiry_Date,
       Achievement_Title,
       Achievement_Details,
-      files,
+      files: uploadedFiles,
     });
-    console.log("Faculty Credential created", credential);
-    res.json({ credential });
+    // console.log("Faculty Credential created", credential);
+    res.json({ message: "Faculty Credential created", credential });
   } catch (error) {
-    console.error("Error uploding faculty credential:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    // console.error("Error uploding faculty credential:", error);
+    res.status(500).json({
+      "Error uploding faculty credential:": error,
+      error: "Internal Server Error",
+    });
   }
 };
 
@@ -157,58 +177,8 @@ module.exports.logoutUser = async (req, res, next) => {
   res.status(200).json({ message: "Logged out Successfully" });
 };
 
-module.exports.dwdCredentials = async (req, res, next) => {};
+module.exports.dwdCredentials = async (req, res, next) => {
+  email = req.email;
+  const userCredentials = await Upload.find({ email });
+};
 module.exports.dwdCurrCredential = async (req, res, next) => {};
-
-// const storage = multer.memoryStorage(); // Store files in memory
-
-// const upload = multer({ storage });
-
-// app.post("/upload-data-faculty", upload.array("files"), async (req, res) => {
-//   // Extract form data from the request
-//   const {
-//     achievement_type,
-//     exp_date,
-//     achievement_details,
-//     achievement_title,
-//     user_email,
-//   } = req.body;
-//   const promises = req.files.map((file) => {
-//     return new Promise((resolve, reject) => {
-//       const buffer = Buffer.from(file.buffer);
-//       const filename =
-//         crypto.randomBytes(16).toString("hex") +
-//         path.extname(file.originalname);
-
-//       // Create a write stream to MongoDB
-//       const uploadStream = bucket.openUploadStream(filename, {
-//         metadata: {
-//           achievement_type,
-//           exp_date,
-//           achievement_details,
-//           achievement_title,
-//           user_email,
-//         },
-//       });
-
-//       uploadStream.write(buffer);
-//       uploadStream.end(() => {
-//         resolve(filename);
-//       });
-//     });
-//   });
-
-//   Promise.all(promises)
-//     .then((savedFiles) => {
-//       // Now you can save 'name' and 'savedFiles' to MongoDB using Mongoose or your preferred MongoDB library
-
-//       res.status(200).json({
-//         message: "Files uploaded successfully!",
-//         filenames: savedFiles,
-//       });
-//     })
-//     .catch((error) => {
-//       console.error("Error storing files in MongoDB:", error);
-//       res.status(500).json({ message: "Internal server error" });
-//     });
-// });
