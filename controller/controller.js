@@ -178,7 +178,6 @@ module.exports.logoutUser = async (req, res, next) => {
 };
 
 module.exports.dwdCredentials = async (req, res, next) => {
-  email = req.email;
-  const userCredentials = await Upload.find({ email });
+  
 };
 module.exports.dwdCurrCredential = async (req, res, next) => {};
